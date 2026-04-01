@@ -1,0 +1,136 @@
+site_name: Python Advanced — OOP, Patterns & Idioms
+site_description: 30-Day Python OOP course + Design Patterns + Pythonic Idioms
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.instant
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - glightbox
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - 30-Day Python OOP:
+    - Overview: days/index.md
+    - "Day 00 — Setup & Basics": days/day00.md
+    - "Day 01 — Variables & Types": days/day01.md
+    - "Day 02 — Functions & Lambdas": days/day02.md
+    - "Day 03 — Classes & Encapsulation": days/day03.md
+    - "Day 04 — Dataclasses & Slots": days/day04.md
+    - "Day 05 — Context Managers": days/day05.md
+    - "Day 06 — Inheritance & Polymorphism": days/day06.md
+    - "Day 07 — ABCs & Protocols": days/day07.md
+    - "Day 08 — Advanced OOP": days/day08.md
+    - "Day 09 — Generics & TypeVar": days/day09.md
+    - "Day 10 — Type Hints Advanced": days/day10.md
+    - "Day 11 — Generic OOP Design": days/day11.md
+    - "Day 12 — Iterators & Generators": days/day12.md
+    - "Day 13 — Decorators In-Depth": days/day13.md
+    - "Day 14 — Descriptors & Properties": days/day14.md
+    - "Day 15 — Error Handling": days/day15.md
+    - "Day 16 — Modules & Packages": days/day16.md
+    - "Day 17 — Design Patterns OOP": days/day17.md
+    - "Day 18 — SOLID Principles": days/day18.md
+    - "Day 19 — Testing & Pytest": days/day19.md
+    - "Day 20 — Metaclasses": days/day20.md
+    - "Day 21 — Functools & Itertools": days/day21.md
+    - "Day 22 — Performance & Profiling": days/day22.md
+    - "Day 23 — Async & Coroutines": days/day23.md
+    - "Day 24 — Mini Project 1 (Bank)": days/day24.md
+    - "Day 25 — Mini Project 2 (Shapes)": days/day25.md
+    - "Day 26 — Mini Project 3 (Game)": days/day26.md
+    - "Day 27 — Refactoring": days/day27.md
+    - "Day 28 — Code Review": days/day28.md
+    - "Day 29 — Advanced Topics": days/day29.md
+    - "Day 30 — Review & Next Steps": days/day30.md
+  - Behavioral Patterns:
+    - Chain of Responsibility: behavioral/chain-of-responsibility.md
+    - Command: behavioral/command.md
+    - Interpreter: behavioral/interpreter.md
+    - Iterator: behavioral/iterator.md
+    - Mediator: behavioral/mediator.md
+    - Memento: behavioral/memento.md
+    - Observer: behavioral/observer.md
+    - State: behavioral/state.md
+    - Strategy: behavioral/strategy.md
+    - Template Method: behavioral/template-method.md
+    - Visitor: behavioral/visitor.md
+  - Creational Patterns:
+    - Abstract Factory: creational/abstract-factory.md
+    - Builder: creational/builder.md
+    - Factory Method: creational/factory-method.md
+    - Prototype: creational/prototype.md
+    - Singleton: creational/singleton.md
+  - Structural Patterns:
+    - Adapter: structural/adapter.md
+    - Bridge: structural/bridge.md
+    - Composite: structural/composite.md
+    - Decorator: structural/decorator.md
+    - Facade: structural/facade.md
+    - Flyweight: structural/flyweight.md
+    - Proxy: structural/proxy.md
+  - Python Idioms:
+    - "Context Manager (RAII)": python-idioms/context-manager.md
+    - Descriptor: python-idioms/descriptor.md
+    - Metaclass: python-idioms/metaclass.md
+    - Dataclass: python-idioms/dataclass.md
+    - Protocol: python-idioms/protocol.md
+    - Generator: python-idioms/generator.md
+    - Decorator Function: python-idioms/decorator-function.md
+    - Mixin: python-idioms/mixin.md
+    - Slots: python-idioms/slots.md
+    - Abstract Base Class: python-idioms/abstract-base-class.md
+    - singledispatch: python-idioms/singledispatch.md
+    - Classmethod Factory: python-idioms/classmethod-factory.md

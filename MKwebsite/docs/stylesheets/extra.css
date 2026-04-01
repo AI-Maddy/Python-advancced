@@ -1,0 +1,24 @@
+/* Grid cards */
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4rem;
+}
+
+/* Flashcard bold summary */
+.md-typeset details summary {
+  font-weight: 600;
+}
+
+/* Abstract admonition — indigo */
+.md-typeset .admonition.abstract,
+.md-typeset details.abstract {
+  border-color: #3f51b5;
+}
+.md-typeset .abstract > .admonition-title,
+.md-typeset .abstract > summary {
+  background-color: rgba(63, 81, 181, 0.1);
+}
+.md-typeset .abstract > .admonition-title::before,
+.md-typeset .abstract > summary::before {
+  background-color: #3f51b5;
+}
