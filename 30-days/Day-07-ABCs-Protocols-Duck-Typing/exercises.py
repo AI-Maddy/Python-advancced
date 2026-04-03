@@ -3,6 +3,7 @@ Day 07 — Exercises: ABCs, Protocols, and Duck Typing
 """
 from __future__ import annotations
 
+import math
 from abc import ABC, abstractmethod
 from typing import Protocol, runtime_checkable
 
@@ -20,16 +21,20 @@ class Drawable(Protocol):
 
 class SVGCircle:
     def __init__(self, r: float) -> None: self.r = r
-    def draw(self) -> str: pass  # TODO
-    def area(self) -> float: pass  # TODO
+    def draw(self) -> str:
+        return f"<circle r='{self.r}'/>"
+    def area(self) -> float:
+        return math.pi * self.r ** 2
 
 class SVGRect:
     def __init__(self, w: float, h: float) -> None: self.w = w; self.h = h
-    def draw(self) -> str: pass  # TODO
-    def area(self) -> float: pass  # TODO
+    def draw(self) -> str:
+        return f"<rect width='{self.w}' height='{self.h}'/>"
+    def area(self) -> float:
+        return self.w * self.h
 
 def render_all(drawables: list[Drawable]) -> list[str]:
-    pass  # TODO
+    return [d.draw() for d in drawables]
 
 
 # Exercise 2: Sortable ABC with sort_key()
@@ -38,7 +43,18 @@ def render_all(drawables: list[Drawable]) -> list[str]:
 class Sortable(ABC):
     @abstractmethod
     def sort_key(self) -> float: ...
-    # TODO: __lt__, __le__, __gt__, __eq__, __hash__
+    def __lt__(self, other: "Sortable") -> bool:
+        return self.sort_key() < other.sort_key()
+    def __le__(self, other: "Sortable") -> bool:
+        return self.sort_key() <= other.sort_key()
+    def __gt__(self, other: "Sortable") -> bool:
+        return self.sort_key() > other.sort_key()
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Sortable):
+            return NotImplemented
+        return self.sort_key() == other.sort_key()
+    def __hash__(self) -> int:
+        return hash(self.sort_key())
 
 class Temperature(Sortable):
     def __init__(self, celsius: float) -> None: self.celsius = celsius
@@ -57,7 +73,9 @@ class Printable(ABC):
 
     @classmethod
     def __subclasshook__(cls, C: type) -> bool:
-        # TODO: return True if C has print_me in its MRO
+        if cls is Printable:
+            if any("print_me" in B.__dict__ for B in C.__mro__):
+                return True
         return NotImplemented  # type: ignore[return-value]
 
 class LegacyPrinter:

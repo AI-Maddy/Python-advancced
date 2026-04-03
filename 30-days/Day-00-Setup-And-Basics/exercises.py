@@ -7,6 +7,8 @@ Replace each TODO with working code.
 """
 from __future__ import annotations
 
+from datetime import date
+
 
 # ---------------------------------------------------------------------------
 # Exercise 1: REPL Exploration
@@ -24,10 +26,11 @@ from __future__ import annotations
 
 def explore_object(obj: object) -> None:
     """Print type info and first 5 public attributes of obj."""
-    # TODO: print type(obj)
-    # TODO: print whether obj is numeric (isinstance check with tuple of types)
-    # TODO: collect non-dunder names from dir(obj), print first 5
-    pass
+    print(f"Type       : {type(obj)}")
+    print(f"Is numeric : {isinstance(obj, (int, float, complex))}")
+    public_attrs = [a for a in dir(obj) if not a.startswith("_")][:5]
+    print(f"First 5 attrs: {public_attrs}")
+    print()
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +48,8 @@ def hello_world(name: str) -> str:
         >>> "Alice" in msg
         True
     """
-    # TODO: import date from datetime
-    # TODO: build and return an f-string greeting including name and today's date
-    pass
+    today = date.today()
+    return f"Hello, {name}! Today is {today.strftime('%A, %B %d %Y')}."
 
 
 # ---------------------------------------------------------------------------
@@ -59,8 +61,7 @@ def hello_world(name: str) -> str:
 
 def compute_square(n: int) -> int:
     """Return n squared."""
-    # TODO: implement
-    pass
+    return n * n
 
 
 # The guard should be at the bottom of the file:
@@ -80,8 +81,12 @@ def compute_square(n: int) -> int:
 
 def introspect(obj: object) -> dict[str, object]:
     """Return an introspection report dict for obj."""
-    # TODO: build and return the dict described above
-    pass
+    return {
+        "type_name": type(obj).__name__,
+        "is_numeric": isinstance(obj, (int, float, complex)),
+        "public_attrs": [a for a in dir(obj) if not a.startswith("_")],
+        "callable": callable(obj),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +104,7 @@ def introspect(obj: object) -> dict[str, object]:
 # 7. Run the tests: python -m pytest tests/test_day00.py -v
 #
 # Record the pytest version here (as a string constant):
-PYTEST_VERSION: str = "TODO: replace with actual version string"
+PYTEST_VERSION: str = "see: python -m pytest --version"
 
 
 if __name__ == "__main__":

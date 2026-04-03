@@ -27,16 +27,15 @@ class WeakCache:
 
     def __init__(self) -> None:
         # TODO: use weakref.WeakValueDictionary
-        ...
+        self._store: weakref.WeakValueDictionary[str, Any] = weakref.WeakValueDictionary()
 
     def set(self, key: str, value: Any) -> None:
         """TODO: store value."""
-        ...
+        self._store[key] = value
 
     def get(self, key: str) -> Any | None:
         """TODO: retrieve value or None."""
-        ...
-        return None
+        return self._store.get(key)
 
 
 def exercise1_weak_cache() -> tuple[bool, bool]:
@@ -74,24 +73,25 @@ class Planet(Enum):
 
     def __init__(self, mass: float, radius: float) -> None:
         # TODO: store mass and radius
-        ...
+        self.mass = mass
+        self.radius = radius
 
     def surface_gravity(self) -> float:
         """TODO: return G * mass / radius^2."""
-        ...
-        return 0.0
+        G = 6.674e-11
+        return G * self.mass / self.radius ** 2
 
     def weight_on(self, body_weight_n: float) -> float:
         """TODO: scale weight by ratio of surface gravities."""
-        ...
-        return 0.0
+        earth_g = Planet.EARTH.surface_gravity()
+        return body_weight_n * (self.surface_gravity() / earth_g)
 
 
 def exercise2_planet_enum() -> tuple[float, float]:
     """Return (earth_gravity, weight_75kg_on_mars). Expected: (~9.8, ~28.3)."""
-    # TODO
-    ...
-    return (0.0, 0.0)
+    earth_g = Planet.EARTH.surface_gravity()
+    weight_on_mars = Planet.MARS.weight_on(75 * 9.8)   # 75 kg on Earth
+    return (earth_g, weight_on_mars)
 
 
 # ---------------------------------------------------------------------------
@@ -112,9 +112,8 @@ def exercise3_chainmap_config() -> dict[str, str]:
     env_vars = {"port": "9090", "host": "staging.example.com"}
     cli_args = {"debug": "true"}
 
-    # TODO: use ChainMap
-    ...
-    return {}
+    config = ChainMap(cli_args, env_vars, defaults)
+    return dict(config)
 
 
 # ---------------------------------------------------------------------------
@@ -138,12 +137,14 @@ class Config:
 
     def __getstate__(self) -> dict[str, Any]:
         """TODO: exclude _connection."""
-        ...
-        return {}
+        state = self.__dict__.copy()
+        del state["_connection"]
+        return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """TODO: restore and re-create _connection."""
-        ...
+        self.__dict__.update(state)
+        self._connection = threading.Lock()
 
 
 def exercise4_pickle_safe() -> tuple[str, str, bool]:
@@ -151,9 +152,10 @@ def exercise4_pickle_safe() -> tuple[str, str, bool]:
     Return (name_after_pickle, value_after_pickle, has_connection).
     Expected: ('test', '42', True)
     """
-    # TODO
-    ...
-    return ("", "", False)
+    cfg = Config("test", "42")
+    data = pickle.dumps(cfg)
+    loaded = pickle.loads(data)
+    return (loaded.name, loaded.value, hasattr(loaded, "_connection"))
 
 
 # ---------------------------------------------------------------------------
@@ -173,8 +175,13 @@ class GraphNode:
 
     def __deepcopy__(self, memo: dict[int, Any]) -> GraphNode:
         """TODO: deep copy with cycle prevention using memo."""
-        ...
-        return GraphNode(self.value)   # placeholder
+        if id(self) in memo:
+            return memo[id(self)]  # type: ignore[return-value]
+        new_node = GraphNode(self.value)
+        memo[id(self)] = new_node
+        for neighbor in self.neighbors:
+            new_node.neighbors.append(copy.deepcopy(neighbor, memo))
+        return new_node
 
 
 def exercise5_deepcopy_graph() -> tuple[bool, bool]:
@@ -182,9 +189,15 @@ def exercise5_deepcopy_graph() -> tuple[bool, bool]:
     Return (deep_copy_is_different_object, values_preserved).
     Create a cycle: n1 → n2 → n1, deep copy it.
     """
-    # TODO
-    ...
-    return (False, False)
+    n1 = GraphNode(1)
+    n2 = GraphNode(2)
+    n1.neighbors.append(n2)
+    n2.neighbors.append(n1)   # cycle
+
+    n1_copy = copy.deepcopy(n1)
+    is_different = n1_copy is not n1
+    values_ok = n1_copy.value == 1 and n1_copy.neighbors[0].value == 2
+    return (is_different, values_ok)
 
 
 # ---------------------------------------------------------------------------

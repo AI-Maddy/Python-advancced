@@ -22,8 +22,8 @@ from typing import Callable
 
 def log(*messages: str, level: str = "INFO", sep: str = " ") -> str:
     """Return a formatted log line."""
-    # TODO: implement
-    pass
+    joined = sep.join(messages)
+    return f"[{level}] {joined}"
 
 
 # ---------------------------------------------------------------------------
@@ -42,8 +42,32 @@ def make_counter(
     start: int = 0, step: int = 1
 ) -> dict[str, Callable[[], int]]:
     """Return a dict of counter operations using closures."""
-    # TODO: implement using nonlocal
-    pass
+    count = start
+
+    def increment() -> int:
+        nonlocal count
+        count += step
+        return count
+
+    def decrement() -> int:
+        nonlocal count
+        count -= step
+        return count
+
+    def reset() -> int:
+        nonlocal count
+        count = start
+        return count
+
+    def value() -> int:
+        return count
+
+    return {
+        "increment": increment,
+        "decrement": decrement,
+        "reset": reset,
+        "value": value,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -58,14 +82,20 @@ def make_counter(
 
 def compose(*funcs: Callable[[int], int]) -> Callable[[int], int]:
     """Return right-to-left composition of funcs."""
-    # TODO: implement using functools.reduce
-    pass
+    def composed(x: int) -> int:
+        for f in reversed(funcs):
+            x = f(x)
+        return x
+    return composed
 
 
 def pipe(*funcs: Callable[[int], int]) -> Callable[[int], int]:
     """Return left-to-right pipeline of funcs."""
-    # TODO: implement
-    pass
+    def piped(x: int) -> int:
+        for f in funcs:
+            x = f(x)
+        return x
+    return piped
 
 
 # ---------------------------------------------------------------------------
@@ -78,8 +108,14 @@ def pipe(*funcs: Callable[[int], int]) -> Callable[[int], int]:
 
 def memoize(func: Callable[..., int]) -> Callable[..., int]:
     """Return a memoized version of func using a closure cache."""
-    # TODO: use a dict as cache, capture with closure
-    pass
+    cache: dict[tuple[object, ...], int] = {}
+
+    def wrapper(*args: object) -> int:
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+
+    return wrapper
 
 
 def slow_fib(n: int) -> int:
@@ -103,8 +139,9 @@ def my_partial(
     func: Callable[..., int], *bound_args: object, **bound_kwargs: object
 ) -> Callable[..., int]:
     """Return func with some args pre-filled (closure-based partial)."""
-    # TODO: implement using a closure
-    pass
+    def wrapper(*args: object, **kwargs: object) -> int:
+        return func(*bound_args, *args, **bound_kwargs, **kwargs)
+    return wrapper
 
 
 def multiply(x: int, y: int) -> int:

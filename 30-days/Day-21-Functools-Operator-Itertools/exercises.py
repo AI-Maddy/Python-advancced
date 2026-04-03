@@ -9,6 +9,7 @@ import functools
 import itertools
 import operator
 from collections.abc import Callable, Iterable
+from functools import reduce, singledispatch, total_ordering
 from typing import Any, TypeVar
 
 T = TypeVar("T")
@@ -23,17 +24,13 @@ T = TypeVar("T")
 
 def compose(*funcs: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """Return a right-to-left function composition pipeline."""
-    # TODO
-    ...
-    return lambda x: x
+    return reduce(lambda f, g: lambda x: f(g(x)), funcs)
 
 
 def exercise1_compose() -> str:
     """Should return 'HELLO'."""
     pipeline = compose(str.upper, str.strip)
-    # TODO: apply to "  hello  "
-    ...
-    return ""
+    return pipeline("  hello  ")
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +42,8 @@ def exercise1_compose() -> str:
 
 def exercise2_islice_filter() -> list[int]:
     """Return even numbers from the first 20 natural numbers."""
-    # TODO: use itertools.islice, itertools.count, filter
-    ...
-    return []
+    first_20 = itertools.islice(itertools.count(1), 20)
+    return list(filter(lambda x: x % 2 == 0, first_20))
 
 
 # ---------------------------------------------------------------------------
@@ -60,9 +56,8 @@ def exercise2_islice_filter() -> list[int]:
 def exercise3_accumulate() -> list[tuple[int, int]]:
     """Return list of (day_number, running_total) tuples."""
     daily_sales = [120, 85, 200, 155, 90, 310, 75]
-    # TODO: use itertools.accumulate
-    ...
-    return []
+    running = itertools.accumulate(daily_sales)
+    return [(day, total) for day, total in enumerate(running, start=1)]
 
 
 # ---------------------------------------------------------------------------
@@ -80,9 +75,13 @@ def exercise4_groupby() -> dict[str, list[str]]:
         {"name": "Carol", "department": "Engineering"},
         {"name": "Dave",  "department": "Marketing"},
     ]
-    # TODO: sort + groupby + build dict
-    ...
-    return {}
+    sorted_emps = sorted(employees, key=operator.itemgetter("department"))
+    return {
+        dept: [e["name"] for e in group]
+        for dept, group in itertools.groupby(
+            sorted_emps, key=operator.itemgetter("department")
+        )
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -95,23 +94,35 @@ def exercise4_groupby() -> dict[str, list[str]]:
 #   - str    → "str:'value'"
 #   - default → "other:repr"
 
-from functools import singledispatch
-
 @singledispatch
 def format_value(value: Any) -> str:
     """Default formatter."""
-    # TODO
-    ...
-    return ""
+    return f"other:{value!r}"
 
 
-# TODO: register handlers for int, float, list, str
+@format_value.register(int)
+def _(value: int) -> str:
+    return f"int:{value}"
+
+
+@format_value.register(float)
+def _(value: float) -> str:
+    return f"float:{value:.2f}"
+
+
+@format_value.register(list)
+def _(value: list[Any]) -> str:
+    return f"list[{len(value)} items]"
+
+
+@format_value.register(str)
+def _(value: str) -> str:
+    return f"str:{value!r}"
+
 
 def exercise5_dispatch() -> list[str]:
     """Return formatted strings for [42, 3.14, ['a','b'], 'hi', None]."""
-    # TODO
-    ...
-    return []
+    return [format_value(v) for v in (42, 3.14, ["a", "b"], "hi", None)]
 
 
 # ---------------------------------------------------------------------------
@@ -122,35 +133,38 @@ def exercise5_dispatch() -> list[str]:
 #       Compare by rank only.  Only implement __eq__ and __lt__.
 #       Then verify Card(14, "♠") > Card(2, "♥").
 
-from functools import total_ordering
-
 @total_ordering
 class Card:
     """Playing card comparable by rank."""
 
     def __init__(self, rank: int, suit: str) -> None:
-        # TODO
-        ...
+        self.rank = rank
+        self.suit = suit
 
     def __eq__(self, other: object) -> bool:
-        # TODO
-        ...
-        return False
+        if not isinstance(other, Card):
+            return NotImplemented
+        return self.rank == other.rank
 
     def __lt__(self, other: object) -> bool:
-        # TODO
-        ...
-        return False
+        if not isinstance(other, Card):
+            return NotImplemented
+        return self.rank < other.rank
 
     def __hash__(self) -> int:
-        return hash((self.rank, self.suit))  # type: ignore[attr-defined]
+        return hash((self.rank, self.suit))
+
+    def __repr__(self) -> str:
+        return f"Card({self.rank}, {self.suit!r})"
 
 
 def exercise6_total_ordering() -> tuple[bool, bool, bool]:
     """Return (ace_gt_two, two_lt_king, ace_gte_ace)."""
-    # TODO
-    ...
-    return (False, False, False)
+    ace  = Card(14, "♠")
+    two  = Card(2, "♥")
+    king = Card(13, "♣")
+    ace2 = Card(14, "♦")
+    return (ace > two, two < king, ace >= ace2)
 
 
 # ---------------------------------------------------------------------------

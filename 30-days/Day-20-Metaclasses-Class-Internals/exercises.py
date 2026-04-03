@@ -18,7 +18,7 @@ from typing import Any, ClassVar
 #       Implement get(name) classmethod on the base class.
 
 class RegistryMeta(type):
-    """TODO: Auto-register concrete subclasses."""
+    """Auto-register concrete subclasses."""
 
     def __init__(
         cls,
@@ -26,8 +26,11 @@ class RegistryMeta(type):
         bases: tuple[type, ...],
         namespace: dict[str, Any],
     ) -> None:
-        # TODO
-        ...
+        super().__init__(name, bases, namespace)
+        if not hasattr(cls, "_registry"):
+            cls._registry: dict[str, type] = {}
+        elif not name.startswith("_"):
+            cls._registry[name] = cls
 
 
 class _Formatter(metaclass=RegistryMeta):
@@ -38,10 +41,8 @@ class _Formatter(metaclass=RegistryMeta):
 
     @classmethod
     def get(cls, name: str) -> type[_Formatter]:
-        """TODO: retrieve registered class by name."""
-        # TODO
-        ...
-        raise KeyError(name)
+        """Retrieve registered class by name."""
+        return cls._registry[name]
 
 
 class HtmlFormatter(_Formatter):
@@ -64,9 +65,10 @@ def exercise1_registry() -> tuple[str, str]:
     Return (html_output, plain_output) for {"name": "Alice", "age": 30}.
     Expected: ('<ul><li>name: Alice</li><li>age: 30</li></ul>', 'name=Alice, age=30')
     """
-    # TODO
-    ...
-    return ("", "")
+    data = {"name": "Alice", "age": 30}
+    html = _Formatter.get("HtmlFormatter")().format(data)
+    plain = _Formatter.get("PlainFormatter")().format(data)
+    return (html, plain)
 
 
 # ---------------------------------------------------------------------------
@@ -77,11 +79,14 @@ def exercise1_registry() -> tuple[str, str]:
 #   - DatabaseConnection() is DatabaseConnection() → True
 
 class SingletonMeta(type):
-    """TODO: implement singleton behaviour."""
+    """Singleton metaclass."""
+
+    _instances: ClassVar[dict[type, Any]] = {}
 
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        # TODO
-        ...
+        if cls not in SingletonMeta._instances:
+            SingletonMeta._instances[cls] = super().__call__(*args, **kwargs)
+        return SingletonMeta._instances[cls]
 
 
 class DatabaseConnection(metaclass=SingletonMeta):
@@ -98,9 +103,12 @@ def exercise2_singleton() -> tuple[bool, str]:
     Create two DatabaseConnections, verify same instance, change dsn on one,
     check the other reflects the change.
     """
-    # TODO
-    ...
-    return (False, "")
+    # Clear singleton cache for test isolation
+    SingletonMeta._instances.pop(DatabaseConnection, None)
+    conn1 = DatabaseConnection("postgres://localhost/db")
+    conn2 = DatabaseConnection("ignored")
+    conn1.dsn = "mysql://server/db"
+    return (conn1 is conn2, conn2.dsn)
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +120,7 @@ def exercise2_singleton() -> tuple[bool, str]:
 #   - Verify FormFields._field_order == ["first_name", "last_name", "email"]
 
 class OrderedFieldMeta(type):
-    """TODO: track attribute definition order."""
+    """Track attribute definition order."""
 
     @classmethod
     def __prepare__(
@@ -121,8 +129,6 @@ class OrderedFieldMeta(type):
         bases: tuple[type, ...],
         **kwargs: Any,
     ) -> OrderedDict[str, Any]:
-        # TODO
-        ...
         return OrderedDict()
 
     def __new__(
@@ -132,9 +138,11 @@ class OrderedFieldMeta(type):
         namespace: OrderedDict[str, Any],
         **kwargs: Any,
     ) -> OrderedFieldMeta:
-        # TODO: create class and attach _field_order
-        ...
-        return super().__new__(mcs, name, bases, dict(namespace))
+        cls = super().__new__(mcs, name, bases, dict(namespace))
+        cls._field_order: list[str] = [
+            k for k in namespace if not k.startswith("__")
+        ]
+        return cls
 
 
 class FormFields(metaclass=OrderedFieldMeta):
@@ -146,9 +154,7 @@ class FormFields(metaclass=OrderedFieldMeta):
 
 def exercise3_ordered_fields() -> list[str]:
     """Return FormFields._field_order. Expected: ['first_name', 'last_name', 'email']."""
-    # TODO
-    ...
-    return []
+    return FormFields._field_order
 
 
 # ---------------------------------------------------------------------------
@@ -161,11 +167,14 @@ def exercise3_ordered_fields() -> list[str]:
 class Model:
     """Base ORM model."""
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        # TODO: check cls.table_name exists; raise TypeError if missing
-        ...
-
     table_name: ClassVar[str] = ""
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "table_name", ""):
+            raise TypeError(
+                f"Class {cls.__name__} must define 'table_name' class variable"
+            )
 
 
 class UserModel(Model):
@@ -201,9 +210,25 @@ def exercise4_init_subclass() -> tuple[str, bool]:
 def exercise5_dynamic_class() -> tuple[str, float]:
     """Return (metaclass_name, distance_for_3_4). Expected: ('type', 5.0)."""
     import math
-    # TODO: build Point with type()
-    ...
-    return ("", 0.0)
+
+    def _init(self: Any, x: float, y: float) -> None:
+        self.x = x
+        self.y = y
+
+    def _distance(self: Any) -> float:
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
+    def _repr(self: Any) -> str:
+        return f"Point(x={self.x}, y={self.y})"
+
+    Point = type(
+        "Point",
+        (object,),
+        {"__init__": _init, "distance": _distance, "__repr__": _repr},
+    )
+
+    p = Point(3, 4)  # type: ignore[call-arg]
+    return (type(Point).__name__, p.distance())
 
 
 # ---------------------------------------------------------------------------

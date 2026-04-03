@@ -6,6 +6,7 @@ Complete each TODO.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Protocol
 
 
@@ -43,45 +44,46 @@ class GodClassUser:
 
 # TODO: Define UserData, UserValidator, UserRepository, UserNotifier here.
 
+@dataclass
 class UserData:
     """Holds user fields only."""
-    # TODO
-    ...
+    name: str
+    email: str
+    password: str
 
 
 class UserValidator:
     """Validates user data."""
-    # TODO
+
     def validate_email(self, email: str) -> bool:
-        # TODO
-        ...
-        return False
+        """Return True if email contains '@'."""
+        return "@" in email
 
     def validate_password(self, password: str) -> bool:
-        # TODO
-        ...
-        return False
+        """Return True if password is at least 8 characters."""
+        return len(password) >= 8
 
 
 class UserRepository:
     """Persists user data."""
-    # TODO
+
+    def __init__(self) -> None:
+        self._store: dict[str, UserData] = {}
+
     def save(self, user: UserData) -> None:
-        # TODO
-        ...
+        """Save user keyed by email."""
+        self._store[user.email] = user
 
     def find(self, email: str) -> UserData | None:
-        # TODO
-        ...
-        return None
+        """Look up user by email."""
+        return self._store.get(email)
 
 
 class UserNotifier:
     """Sends notifications."""
     def send_welcome(self, user: UserData) -> str:
-        # TODO
-        ...
-        return ""
+        """Return welcome message (simulate send)."""
+        return f"Welcome {user.name}! An email was sent to {user.email}."
 
 
 def exercise1_srp() -> tuple[bool, bool, str]:
@@ -89,9 +91,16 @@ def exercise1_srp() -> tuple[bool, bool, str]:
     Create a valid user, validate, save, and send welcome.
     Return (email_valid, password_valid, welcome_message).
     """
-    # TODO
-    ...
-    return (False, False, "")
+    user = UserData("Alice", "alice@example.com", "s3cr3tPwd")
+    validator = UserValidator()
+    repo = UserRepository()
+    notifier = UserNotifier()
+
+    email_ok = validator.validate_email(user.email)
+    pass_ok = validator.validate_password(user.password)
+    repo.save(user)
+    msg = notifier.send_welcome(user)
+    return (email_ok, pass_ok, msg)
 
 
 # ---------------------------------------------------------------------------
@@ -124,21 +133,20 @@ class ReportGenerator:
 
 
 class MarkdownRenderer:
-    """TODO: Render as Markdown (## title, then bullet list)."""
+    """Render as Markdown (## title, then bullet list)."""
 
     def render(self, title: str, rows: list[str]) -> str:
-        # TODO
-        ...
-        return ""
+        bullets = "\n".join(f"- {r}" for r in rows)
+        return f"## {title}\n{bullets}"
 
 
 def exercise2_ocp() -> tuple[str, str]:
     """Return (text_report, markdown_report) for same data."""
     title = "Sales"
     rows = ["Alice: $100", "Bob: $200"]
-    # TODO
-    ...
-    return ("", "")
+    text = ReportGenerator(TextRenderer()).generate(title, rows)
+    md = ReportGenerator(MarkdownRenderer()).generate(title, rows)
+    return (text, md)
 
 
 # ---------------------------------------------------------------------------
@@ -164,17 +172,17 @@ class BadPenguin(BadBird):
 class Bird:
     """Base bird — all birds can swim."""
     def swim(self) -> str:
-        # TODO
-        ...
-        return ""
+        return f"{type(self).__name__} swimming"
 
 
 class FlyingBird(Bird):
     """Birds that can fly."""
     def fly(self) -> str:
-        # TODO
-        ...
-        return ""
+        return f"{type(self).__name__} flying"
+
+
+class Eagle(FlyingBird):
+    """Eagle — can fly and swim."""
 
 
 class Penguin(Bird):
@@ -187,9 +195,9 @@ def exercise3_lsp() -> tuple[str, str, str]:
     Return (eagle.fly(), penguin.swim(), eagle.swim()).
     No LSP violation — Penguin does not have .fly().
     """
-    # TODO
-    ...
-    return ("", "", "")
+    eagle = Eagle()
+    penguin = Penguin()
+    return (eagle.fly(), penguin.swim(), eagle.swim())
 
 
 # ---------------------------------------------------------------------------
@@ -217,38 +225,33 @@ class BadPaymentService:
 
 
 class PaymentGateway(Protocol):
-    """TODO: Define the abstraction."""
+    """Abstraction for payment gateways."""
     def charge(self, amount: float, token: str) -> str: ...
 
 
 class PayPalGateway:
-    """TODO: Implement PayPal gateway satisfying PaymentGateway protocol."""
+    """PayPal gateway satisfying PaymentGateway protocol."""
     def charge(self, amount: float, token: str) -> str:
-        # TODO
-        ...
-        return ""
+        return f"PayPal charged ${amount:.2f} with token {token}"
 
 
 class PaymentService:
-    """TODO: High-level service depending on PaymentGateway abstraction."""
+    """High-level service depending on PaymentGateway abstraction."""
 
     def __init__(self, gateway: PaymentGateway) -> None:
-        # TODO
-        ...
+        self._gateway = gateway
 
     def pay(self, amount: float, token: str) -> str:
-        # TODO
-        ...
-        return ""
+        return self._gateway.charge(amount, token)
 
 
 def exercise4_dip() -> tuple[str, str]:
     """
     Return (stripe_result, paypal_result) for $50 charge with token "tok_123".
     """
-    # TODO
-    ...
-    return ("", "")
+    stripe_result = PaymentService(StripeGateway()).pay(50.0, "tok_123")
+    paypal_result = PaymentService(PayPalGateway()).pay(50.0, "tok_123")
+    return (stripe_result, paypal_result)
 
 
 # ---------------------------------------------------------------------------

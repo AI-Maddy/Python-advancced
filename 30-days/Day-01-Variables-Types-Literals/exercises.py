@@ -22,8 +22,9 @@ def safe_divide(a: int | float, b: int | float) -> float | None:
         >>> safe_divide(1, 3)  # doctest: +ELLIPSIS
         0.333...
     """
-    # TODO: implement
-    pass
+    if b == 0:
+        return None
+    return float(a) / float(b)
 
 
 # ---------------------------------------------------------------------------
@@ -45,8 +46,12 @@ def safe_divide(a: int | float, b: int | float) -> float | None:
 
 def format_table(data: list[tuple[str, int]]) -> str:
     """Return a formatted score table string."""
-    # TODO: implement using f-strings and string alignment
-    pass
+    lines: list[str] = []
+    lines.append(f"{'Name':<15}{'Score':>6}")
+    lines.append("-" * 21)
+    for name, score in data:
+        lines.append(f"{name:<15}{score:>6}")
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -64,8 +69,21 @@ def format_table(data: list[tuple[str, int]]) -> str:
 
 def classify(value: object) -> str:
     """Return a string category for value's type."""
-    # TODO: implement — be careful about bool vs int ordering!
-    pass
+    if value is None:
+        return "none"
+    if isinstance(value, bool):      # before int!
+        return "boolean"
+    if isinstance(value, int):
+        return "integer"
+    if isinstance(value, float):
+        return "float"
+    if isinstance(value, complex):
+        return "complex"
+    if isinstance(value, str):
+        return "text"
+    if isinstance(value, bytes):
+        return "bytes"
+    return "other"
 
 
 # ---------------------------------------------------------------------------
@@ -85,14 +103,17 @@ T = TypeVar("T")
 
 def find_first(lst: list[T], predicate: Callable[[T], bool]) -> T | None:
     """Return first element where predicate is True, or None."""
-    # TODO: implement
-    pass
+    for item in lst:
+        if predicate(item):
+            return item
+    return None
 
 
 def describe_result(result: object) -> str:
     """Return 'found: <value>' or 'not found' using is-None check."""
-    # TODO: use 'result is None' (not 'result == None' or 'not result')
-    pass
+    if result is None:
+        return "not found"
+    return f"found: {result}"
 
 
 # ---------------------------------------------------------------------------
@@ -108,8 +129,12 @@ def factorial(n: int) -> int:
     Raises:
         ValueError: if n is negative.
     """
-    # TODO: implement iteratively
-    pass
+    if n < 0:
+        raise ValueError(f"factorial not defined for negative numbers: {n}")
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
 
 
 if __name__ == "__main__":

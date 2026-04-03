@@ -20,17 +20,14 @@ from typing import Any
 # concurrently.  Verify total time is approx max(delays) not sum(delays).
 
 async def async_fetch(url: str, delay: float = 0.1) -> dict[str, Any]:
-    """TODO: simulate async HTTP fetch."""
-    # TODO
-    ...
-    return {}
+    """Simulate async HTTP fetch."""
+    await asyncio.sleep(delay)
+    return {"url": url, "status": 200, "body": f"Content of {url}"}
 
 
 async def fetch_all(urls: list[str]) -> list[dict[str, Any]]:
-    """TODO: fetch all URLs concurrently using asyncio.gather."""
-    # TODO
-    ...
-    return []
+    """Fetch all URLs concurrently using asyncio.gather."""
+    return list(await asyncio.gather(*[async_fetch(u) for u in urls]))
 
 
 async def exercise1_fetch() -> tuple[list[dict[str, Any]], float]:
@@ -40,9 +37,12 @@ async def exercise1_fetch() -> tuple[list[dict[str, Any]], float]:
     """
     urls = ["http://a.com", "http://b.com", "http://c.com"]
     delays = [0.3, 0.1, 0.2]
-    # TODO: call fetch_all and measure time
-    ...
-    return ([], 0.0)
+    start = time.perf_counter()
+    results = await asyncio.gather(*[
+        async_fetch(url, delay) for url, delay in zip(urls, delays)
+    ])
+    elapsed = time.perf_counter() - start
+    return (list(results), elapsed)
 
 
 # ---------------------------------------------------------------------------
@@ -54,17 +54,15 @@ async def exercise1_fetch() -> tuple[list[dict[str, Any]], float]:
 # Run 5 such tasks concurrently with gather and return all results.
 
 async def compute(name: str, n: int) -> int:
-    """TODO: simulate async computation."""
-    # TODO
-    ...
-    return 0
+    """Simulate async computation."""
+    await asyncio.sleep(0.1)
+    return n * n
 
 
 async def exercise2_gather() -> list[int]:
     """Run compute for n in [1,2,3,4,5] concurrently; return squared results."""
-    # TODO
-    ...
-    return []
+    results = await asyncio.gather(*[compute(f"task{n}", n) for n in range(1, 6)])
+    return list(results)
 
 
 # ---------------------------------------------------------------------------
@@ -76,25 +74,30 @@ async def exercise2_gather() -> list[int]:
 # Run both concurrently; verify all items consumed in correct order.
 
 async def producer(queue: asyncio.Queue[str], items: list[str]) -> None:
-    """TODO: produce items into queue."""
-    # TODO
-    ...
+    """Produce items into queue."""
+    for item in items:
+        await asyncio.sleep(0.05)
+        await queue.put(item)
 
 
 async def consumer(queue: asyncio.Queue[str], n_items: int) -> list[str]:
-    """TODO: consume n_items from queue and return them."""
-    # TODO
-    ...
-    return []
+    """Consume n_items from queue and return them."""
+    results: list[str] = []
+    for _ in range(n_items):
+        item = await queue.get()
+        results.append(item)
+        queue.task_done()
+    return results
 
 
 async def exercise3_queue() -> list[str]:
     """Return consumed items. Expected: ['task_0', 'task_1', ..., 'task_4']."""
     items = [f"task_{i}" for i in range(5)]
     q: asyncio.Queue[str] = asyncio.Queue()
-    # TODO: run producer and consumer concurrently
-    ...
-    return []
+    prod = asyncio.create_task(producer(q, items))
+    cons = asyncio.create_task(consumer(q, len(items)))
+    await prod
+    return await cons
 
 
 # ---------------------------------------------------------------------------
@@ -111,18 +114,16 @@ class AsyncTimer:
 
     def __init__(self) -> None:
         self.elapsed: float = 0.0
-        # TODO: add _start field
+        self._start: float = 0.0
 
     async def __aenter__(self) -> AsyncTimer:
-        """TODO: record start time."""
-        # TODO
-        ...
+        """Record start time."""
+        self._start = time.perf_counter()
         return self
 
     async def __aexit__(self, *exc_info: Any) -> bool:
-        """TODO: calculate elapsed time."""
-        # TODO
-        ...
+        """Calculate elapsed time."""
+        self.elapsed = time.perf_counter() - self._start
         return False
 
 
@@ -148,11 +149,12 @@ async def exercise5_lock() -> int:
 
     async def increment() -> None:
         for _ in range(100):
-            # TODO: use lock to safely increment counter[0]
-            ...
+            async with lock:
+                val = counter[0]
+                await asyncio.sleep(0)
+                counter[0] = val + 1
 
-    # TODO: run 10 concurrent increment tasks
-    ...
+    await asyncio.gather(*[increment() for _ in range(10)])
     return counter[0]
 
 

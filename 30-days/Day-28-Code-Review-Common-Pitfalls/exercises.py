@@ -23,9 +23,10 @@ def collect_BAD(item: str, bucket: list[str] = []) -> list[str]:  # noqa: B006
 
 def collect_FIXED(item: str, bucket: list[str] | None = None) -> list[str]:
     """TODO: fix the mutable default."""
-    # TODO
-    ...
-    return []
+    if bucket is None:
+        bucket = []
+    bucket.append(item)
+    return bucket
 
 
 # ---------------------------------------------------------------------------
@@ -41,9 +42,7 @@ def make_multipliers_BAD(n: int) -> list:
 
 def make_multipliers_FIXED(n: int) -> list:
     """TODO: fix late binding."""
-    # TODO
-    ...
-    return []
+    return [lambda x, i=i: x * i for i in range(n)]
 
 
 # ---------------------------------------------------------------------------
@@ -57,9 +56,7 @@ def is_greeting_BAD(s: str) -> bool:
 
 def is_greeting_FIXED(s: str) -> bool:
     """TODO: fix identity comparison."""
-    # TODO
-    ...
-    return False
+    return s == "hello"
 
 
 # ---------------------------------------------------------------------------
@@ -76,9 +73,10 @@ def safe_divide_BAD(a: float, b: float) -> float | str:
 
 def safe_divide_FIXED(a: float, b: float) -> float | str:
     """TODO: catch only ZeroDivisionError."""
-    # TODO
-    ...
-    return 0.0
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return "error"
 
 
 # ---------------------------------------------------------------------------
@@ -95,9 +93,7 @@ def remove_negatives_BAD(numbers: list[int]) -> list[int]:
 
 def remove_negatives_FIXED(numbers: list[int]) -> list[int]:
     """TODO: correctly remove all negative numbers."""
-    # TODO
-    ...
-    return numbers
+    return [n for n in numbers if n >= 0]
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +122,8 @@ class Dog_FIXED(Animal, Domestic):
         # Hint: you need to call both Animal.__init__ and Domestic.__init__
         # with super() this requires cooperative multiple inheritance
         # For simplicity here, call each directly or use super() chain.
-        ...
+        Animal.__init__(self, name)
+        Domestic.__init__(self, owner)
 
 
 # ---------------------------------------------------------------------------

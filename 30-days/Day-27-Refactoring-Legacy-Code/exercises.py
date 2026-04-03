@@ -85,38 +85,46 @@ class PriceCalculator:
     """TODO: compute subtotal, discount, total."""
 
     def subtotal(self, order: Order) -> float:
-        # TODO
-        ...
-        return 0.0
+        return sum(i["price"] * i["qty"] for i in order.items)
 
     def discount(self, order: Order) -> float:
         # TODO: 15% for vip, 5% for member + 10% extra for EXTRA10 coupon
-        ...
-        return 0.0
+        sub = self.subtotal(order)
+        if order.customer_type == "vip":
+            d = sub * 0.15
+        elif order.customer_type == "member":
+            d = sub * 0.05
+        else:
+            d = 0.0
+        if order.coupon == "EXTRA10":
+            d += sub * 0.10
+        return d
 
     def total(self, order: Order) -> float:
         # TODO: (subtotal - discount) * 1.08 (tax)
-        ...
-        return 0.0
+        return (self.subtotal(order) - self.discount(order)) * 1.08
 
 
 class InventoryChecker:
     """TODO: check and reserve stock."""
 
     def __init__(self, inventory: dict[str, int]) -> None:
-        # TODO
-        ...
+        self._inventory = dict(inventory)
 
     def check(self, order: Order) -> str | None:
         """Return error message if insufficient stock, else None."""
-        # TODO
-        ...
+        for item in order.items:
+            available = self._inventory.get(item["name"], 0)
+            if available < item["qty"]:
+                return f"insufficient stock: {item['name']}"
         return None
 
     def reserve(self, order: Order) -> None:
         """Deduct quantities from inventory."""
-        # TODO
-        ...
+        for item in order.items:
+            self._inventory[item["name"]] = (
+                self._inventory.get(item["name"], 0) - item["qty"]
+            )
 
 
 class NotificationService:
@@ -127,8 +135,8 @@ class NotificationService:
 
     def notify(self, customer_name: str, total: float) -> None:
         """TODO: append message to self.sent."""
-        # TODO
-        ...
+        msg = f"Confirmed for {customer_name}: ${total:.2f}"
+        self.sent.append(msg)
 
 
 class RefactoredOrderProcessor:
@@ -140,14 +148,19 @@ class RefactoredOrderProcessor:
         checker: InventoryChecker,
         notifier: NotificationService,
     ) -> None:
-        # TODO
-        ...
+        self._calc    = calculator
+        self._checker = checker
+        self._notifier = notifier
 
     def process(self, order: Order) -> dict:
         """TODO: validate → calculate → reserve → notify → return result."""
-        # TODO
-        ...
-        return {}
+        error = self._checker.check(order)
+        if error:
+            return {"error": error}
+        total = self._calc.total(order)
+        self._checker.reserve(order)
+        self._notifier.notify(order.customer_name, total)
+        return {"status": "ok", "total": round(total, 2)}
 
 
 # ---------------------------------------------------------------------------
